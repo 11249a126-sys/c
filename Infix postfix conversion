@@ -1,0 +1,95 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+int top = -1, max;
+char *stack;
+void push(char item);
+char pop();
+char peek();
+int get_precedence(char op);
+
+void push(char item) {
+    if (top == max - 1) {
+        printf("Stack overflow\n");
+    } else {
+        stack[++top] = item;
+    }
+}
+char pop() {
+    if (top == -1) {
+        printf("Stack underflow\n");
+        return '\0';
+    } else {
+        return stack[top--];
+    }
+}
+char peek() {
+    if (top == -1)
+        return '\0';
+    else
+        return stack[top];
+}
+int get_precedence(char op) {
+    switch (op) {
+        case '+':
+        case '-':
+            return 1;
+        case '*':
+        case '/':
+            return 2;
+        case '^':
+            return 3;
+        default:
+            return 0;
+    }
+}
+int main() {
+    printf("Enter the size of infix expression: ");
+    scanf("%d", &max);
+
+    stack = (char *)malloc(max * sizeof(char));
+    char infix[max], postfix[max];
+
+    printf("Enter the infix expression (max %d characters): ", max - 1);
+    scanf("%s", infix);
+
+    int j = 0, i = 0;
+    char c;
+
+    while ((c = infix[i]) != '\0') {
+        int token_precedence = get_precedence(c);
+
+        if (token_precedence > 0) {
+            while (token_precedence <= get_precedence(peek())) {
+                postfix[j++] = pop();
+            }
+            push(c);
+        } else {
+            switch (c) {
+                case '(':
+                    push(c);
+                    break;
+                case ')':
+                    while (peek() != '(' && peek() != '\0') {
+                        postfix[j++] = pop();
+                    }
+                    if (peek() == '(')
+                        pop(); 
+                    break;
+                default:
+                    postfix[j++] = c;
+                    break;
+            }
+        }
+        i++;
+    }
+    while (peek() != '\0') {
+        postfix[j++] = pop();
+    }
+
+    postfix[j] = '\0';
+    printf("Postfix notation: %s\n", postfix);
+
+    free(stack);
+    return 0;
+}
